@@ -2,6 +2,7 @@
 #include <asm/asm-offsets.h>
 #include <asm/frame.h>
 #include <asm/tdx.h>
+#include <asm/asm.h>
 
 /*
  * TDCALL and SEAMCALL are supported in Binutils >= 2.36.
@@ -85,6 +86,7 @@
 	.endif	/* \saved */
 
 	.if \host
+1:
 	seamcall
 	/*
 	 * SEAMCALL instruction is essentially a VMExit from VMX root
@@ -99,6 +101,7 @@
 	 */
 	mov $TDX_SEAMCALL_VMFAILINVALID, %rdi
 	cmovc %rdi, %rax
+2:
 	.else
 	tdcall
 	.endif
@@ -185,4 +188,21 @@
 
 	FRAME_END
 	RET
+
+	.if \host
+3:
+	/*
+	 * SEAMCALL caused #GP or #UD.  By reaching here %eax contains
+	 * the trap number.  Convert the trap number to the TDX error
+	 * code by setting TDX_SW_ERROR to the high 32-bits of %rax.
+	 *
+	 * Note cannot OR TDX_SW_ERROR directly to %rax as OR instruction
+	 * only accepts 32-bit immediate at most.
+	 */
+	movq $TDX_SW_ERROR, %r12
+	orq  %r12, %rax
+	jmp  2b
+
+	_ASM_EXTABLE_FAULT(1b, 3b)
+	.endif	/* \host */
 .endm
