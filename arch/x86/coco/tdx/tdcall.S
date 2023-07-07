@@ -51,7 +51,7 @@
  * Return status of TDCALL via RAX.
  */
 SYM_FUNC_START(__tdcall)
-	TDX_MODULE_CALL host=0 ret=0
+	TDX_MODULE_CALL host=0 ret=0 saved=0
 SYM_FUNC_END(__tdcall)
 
 /*
@@ -66,7 +66,7 @@ SYM_FUNC_END(__tdcall)
  * Return status of TDCALL via RAX.
  */
 SYM_FUNC_START(__tdcall_ret)
-	TDX_MODULE_CALL host=0 ret=1
+	TDX_MODULE_CALL host=0 ret=1 saved=0
 SYM_FUNC_END(__tdcall_ret)
 
 /*
