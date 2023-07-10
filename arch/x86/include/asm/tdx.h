@@ -21,31 +21,6 @@
 #ifndef __ASSEMBLY__
 
 /*
- * Used to gather input/output registers of the TDCALL and SEAMCALL
- * instructions when requesting services from the TDX module.
- *
- * This is a software only structure and not part of the TDX module/VMM ABI.
- */
-struct tdx_module_args {
-	/* callee-clobbered */
-	u64 rcx;
-	u64 rdx;
-	u64 r8;
-	u64 r9;
-	/* extra callee-clobbered */
-	u64 r10;
-	u64 r11;
-	/* callee-saved + rdi/rsi */
-	u64 r12;
-	u64 r13;
-	u64 r14;
-	u64 r15;
-	u64 rbx;
-	u64 rdi;
-	u64 rsi;
-};
-
-/*
  * Used by the #VE exception handler to gather the #VE exception
  * info from the TDX module. This is a software only structure
  * and not part of the TDX module/VMM ABI.

@@ -145,11 +145,11 @@
 	.endif	/* \ret */
 
 	.if \saved
-	.if \ret && \host
+	.if \ret
 	/*
-	 * Clear registers shared by guest for VP.ENTER to prevent
-	 * speculative use of guest's values, including those are
-	 * restored from the stack.
+	 * Clear registers shared by guest for VP.ENTER and VP.VMCALL to
+	 * prevent speculative use of values from guest/VMM, including
+	 * those are restored from the stack.
 	 *
 	 * See arch/x86/kvm/vmx/vmenter.S:
 	 *
@@ -173,7 +173,7 @@
 	xorq %r15, %r15
 	xorq %rbx, %rbx
 	xorq %rdi, %rdi
-	.endif	/* \ret && \host */
+	.endif	/* \ret */
 
 	/* Restore callee-saved GPRs as mandated by the x86_64 ABI */
 	popq	%r15

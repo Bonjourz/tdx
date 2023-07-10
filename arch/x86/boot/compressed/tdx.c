@@ -11,14 +11,32 @@
 #include <asm/shared/tdx.h>
 
 /* Called from __tdx_hypercall() for unrecoverable failure */
-void __tdx_hypercall_failed(void)
+static inline void __tdx_hypercall_failed(void)
 {
 	error("TDVMCALL failed. TDX module bug?");
 }
 
+static inline u64 __tdx_hypercall(struct tdx_module_args *args)
+{
+	u64 ret;
+
+	args->rcx = TDVMCALL_EXPOSE_REGS_MASK;
+	ret = __tdcall_saved_ret(TDG_VP_VMCALL, args);
+
+	/*
+	 * RAX!=0 indicates a failure of the TDVMCALL mechanism itself and that
+	 * something has gone horribly wrong with the TDX module.
+	 */
+	if (ret)
+		__tdx_hypercall_failed();
+
+	/* The return status of the hypercall itself is in R10. */
+	return args->r10;
+}
+
 static inline unsigned int tdx_io_in(int size, u16 port)
 {
-	struct tdx_hypercall_args args = {
+	struct tdx_module_args args = {
 		.r10 = TDX_HYPERCALL_STANDARD,
 		.r11 = hcall_func(EXIT_REASON_IO_INSTRUCTION),
 		.r12 = size,
@@ -26,7 +44,7 @@ static inline unsigned int tdx_io_in(int size, u16 port)
 		.r14 = port,
 	};
 
-	if (__tdx_hypercall_ret(&args))
+	if (__tdx_hypercall(&args))
 		return UINT_MAX;
 
 	return args.r11;
@@ -34,7 +52,7 @@ static inline unsigned int tdx_io_in(int size, u16 port)
 
 static inline void tdx_io_out(int size, u16 port, u32 value)
 {
-	struct tdx_hypercall_args args = {
+	struct tdx_module_args args = {
 		.r10 = TDX_HYPERCALL_STANDARD,
 		.r11 = hcall_func(EXIT_REASON_IO_INSTRUCTION),
 		.r12 = size,
