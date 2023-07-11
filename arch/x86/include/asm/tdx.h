@@ -21,16 +21,18 @@
 #ifndef __ASSEMBLY__
 
 /*
- * Used to gather the output registers values of the TDCALL and SEAMCALL
+ * Used to gather input/output registers of the TDCALL and SEAMCALL
  * instructions when requesting services from the TDX module.
  *
  * This is a software only structure and not part of the TDX module/VMM ABI.
  */
-struct tdx_module_output {
+struct tdx_module_args {
+	/* input/output */
 	u64 rcx;
 	u64 rdx;
 	u64 r8;
 	u64 r9;
+	/* additional output */
 	u64 r10;
 	u64 r11;
 };
@@ -56,8 +58,8 @@ struct ve_info {
 void __init tdx_early_init(void);
 
 /* Used to communicate with the TDX module */
-u64 __tdcall(u64 fn, u64 rcx, u64 rdx, u64 r8, u64 r9,
-	     struct tdx_module_output *out);
+u64 __tdcall(u64 fn, struct tdx_module_args *args);
+u64 __tdcall_ret(u64 fn, struct tdx_module_args *args);
 
 void tdx_get_ve_info(struct ve_info *ve);
 
